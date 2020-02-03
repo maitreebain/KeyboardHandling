@@ -21,11 +21,15 @@ class ViewController: UIViewController {
     
     private var keyboardIsVisible = false
     
+    private var originalYConstraint: NSLayoutConstraint!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         registerForKeyboardNotifs()
-        
+        usernameTextField.delegate = self
+        passwordTextField.delegate = self
+        pulsateLogo()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -58,12 +62,43 @@ class ViewController: UIViewController {
         //TODO: complete
     }
     
-    
     private func moveKeyboardUp(_ height: CGFloat) {
         
         if keyboardIsVisible { return }
-        pursuitLogoCenterYConstraint.constant -= height
+        originalYConstraint = pursuitLogoCenterYConstraint // save original value
+        pursuitLogoCenterYConstraint.constant -= height // (height * 0.80)
+        
+        UIView.animate(withDuration: 0.5) {
+            self.view.layoutIfNeeded()
+        }
         keyboardIsVisible = true
     }
+    
+    private func resetUI() {
+        keyboardIsVisible = false
+        //-314 = 0, +314
+        //double negative => positive
+        pursuitLogoCenterYConstraint.constant -= originalYConstraint.constant
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    private func pulsateLogo() {
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: [.repeat, .autoreverse], animations: {
+            self.pursuitLogo.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        }, completion: nil)
+    }
+}
+
+extension ViewController: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        resetUI()
+        return true
+    }
+    
+    
 }
 
